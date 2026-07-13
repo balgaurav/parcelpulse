@@ -38,9 +38,9 @@ func newGateway() *gateway {
 func (g *gateway) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", g.health)
-	mux.Handle("/api/shipments", g.proxy(g.trackingURL, "/v1/shipments"))
-	mux.Handle("/api/shipments/", g.proxy(g.trackingURL, "/v1/shipments/"))
-	mux.Handle("/api/notifications", g.proxy(g.notificationsURL, "/v1/notifications"))
+	mux.Handle("/api/shipments", g.proxy(g.trackingURL, "/v1"))
+	mux.Handle("/api/shipments/", g.proxy(g.trackingURL, "/v1"))
+	mux.Handle("/api/notifications", g.proxy(g.notificationsURL, "/v1"))
 	return g.withCORS(g.withRequestID(mux))
 }
 
@@ -85,10 +85,7 @@ func (g *gateway) proxy(target *url.URL, prefix string) http.Handler {
 	original := proxy.Director
 	proxy.Director = func(r *http.Request) {
 		original(r)
-		r.URL.Path = prefix + strings.TrimPrefix(r.URL.Path, strings.TrimSuffix(prefix, "/"))
-		if strings.HasSuffix(prefix, "/") {
-			r.URL.Path = prefix + strings.TrimPrefix(r.URL.Path, "/api/shipments/")
-		}
+		r.URL.Path = prefix + strings.TrimPrefix(r.URL.Path, "/api")
 		r.Host = target.Host
 	}
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
