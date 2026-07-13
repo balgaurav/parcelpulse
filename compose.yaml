@@ -5,6 +5,7 @@ services:
       dockerfile: deploy/Dockerfile.go
       args: { SERVICE: tracking }
     environment:
+      PORT: "8081"
       NOTIFICATIONS_URL: http://notifications:8082/internal/events
     healthcheck:
       test: ["CMD", "/service"]
@@ -17,6 +18,8 @@ services:
       context: .
       dockerfile: deploy/Dockerfile.go
       args: { SERVICE: notifications }
+    environment:
+      PORT: "8082"
 
   gateway:
     build:
@@ -25,6 +28,7 @@ services:
       args: { SERVICE: gateway }
     ports: ["8080:8080"]
     environment:
+      PORT: "8080"
       TRACKING_URL: http://tracking:8081
       NOTIFICATIONS_URL: http://notifications:8082
     depends_on: [tracking, notifications]
