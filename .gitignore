@@ -1,0 +1,11 @@
+# Go
+bin/
+coverage.out
+
+# Node
+web/node_modules/
+web/dist/
+
+# Local configuration
+.env
+.DS_Store
