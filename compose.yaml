@@ -1,0 +1,39 @@
+services:
+  tracking:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.go
+      args: { SERVICE: tracking }
+    environment:
+      NOTIFICATIONS_URL: http://notifications:8082/internal/events
+    healthcheck:
+      test: ["CMD", "/service"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  notifications:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.go
+      args: { SERVICE: notifications }
+
+  gateway:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.go
+      args: { SERVICE: gateway }
+    ports: ["8080:8080"]
+    environment:
+      TRACKING_URL: http://tracking:8081
+      NOTIFICATIONS_URL: http://notifications:8082
+    depends_on: [tracking, notifications]
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.web
+    ports: ["5173:5173"]
+    environment:
+      VITE_API_URL: http://localhost:8080/api
+    depends_on: [gateway]
