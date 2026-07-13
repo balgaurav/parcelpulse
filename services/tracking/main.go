@@ -80,8 +80,12 @@ func (s *store) appendEvent(id, status, location, note string) (Shipment, Tracki
 	if !ok {
 		return Shipment{}, TrackingEvent{}, errors.New("shipment not found")
 	}
-	if len(shipment.Events) == 0 || !allowedTransitions[shipment.Events[len(shipment.Events)-1].Status][status] {
-		return Shipment{}, TrackingEvent{}, fmt.Errorf("cannot transition from %q to %q", shipment.Events[len(shipment.Events)-1].Status, status)
+	currentStatus := "label_created"
+	if len(shipment.Events) > 0 {
+		currentStatus = shipment.Events[len(shipment.Events)-1].Status
+	}
+	if !allowedTransitions[currentStatus][status] {
+		return Shipment{}, TrackingEvent{}, fmt.Errorf("cannot transition from %q to %q", currentStatus, status)
 	}
 	event := TrackingEvent{ID: fmt.Sprintf("evt_%d", time.Now().UnixNano()), Status: status, Location: location, Note: note, At: time.Now().UTC()}
 	shipment.Events = append(shipment.Events, event)
